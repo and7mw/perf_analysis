@@ -17,6 +17,17 @@ void conv_nchw(const float *input,
                const shape& wShape,
                const shape& outShape);
 
+void conv_nhwc(const float *input,
+               const float *weight,
+               float *output,
+               const shape& inShape,
+               const shape& wShape,
+               const shape& outShape);
+
+void reorder_nchw_nhwc(const float* src,
+                       float* dst,
+                       const std::array<size_t, 4>& shape);
+
 void accuracy_test();
 
 int main() {
@@ -105,4 +116,5 @@ void accuracy_test() {
             throw std::runtime_error("Accuracy error!");
         }
     }
+    std::cout << "Accuracy OK!" << std::endl;
 }
