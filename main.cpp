@@ -141,6 +141,19 @@ int main() {
     std::chrono::high_resolution_clock::time_point start, end;
     start = std::chrono::high_resolution_clock::now();
 
+#if defined(SIMD_IMPL)
+    if (!__builtin_cpu_supports("avx2")) {
+        throw std::runtime_error("simd implementation requires avx2 feature support");
+    }
+    if (!__builtin_cpu_supports("fma")) {
+        throw std::runtime_error("simd implementation requires fma feature support");
+    }
+    const size_t vlen = 8;
+    if (inShape[1] % vlen != 0) {
+        throw std::runtime_error("simd implementation support C_IN % vlen == 0");
+    }
+#endif
+
     for (size_t i = 0; i < ITER_NUM; i++) {
         if (!accuracy) {
             std::fill(inputNCHW.begin(), inputNCHW.end(), i + 1);
