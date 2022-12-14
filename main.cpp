@@ -45,7 +45,6 @@ struct params {
     size_t KW;
     size_t ITER_NUM;
 
-    bool accuracy = false;
     std::vector<float> input;
     std::vector<float> weight;
     std::vector<float> output;
@@ -61,7 +60,6 @@ params accuracy_params = {
     .KW = 2,
     .ITER_NUM = 1,
 
-    .accuracy = true,
     // per each channel
     //
     // [ 1, 2, 3, 1
@@ -138,9 +136,6 @@ int main() {
     weight = std::move(weightNCHW);
 #endif
 
-    std::chrono::high_resolution_clock::time_point start, end;
-    start = std::chrono::high_resolution_clock::now();
-
 #if defined(SIMD_IMPL)
     if (!__builtin_cpu_supports("avx2")) {
         throw std::runtime_error("simd implementation requires avx2 feature support");
@@ -153,6 +148,9 @@ int main() {
         throw std::runtime_error("simd implementation support C_IN % vlen == 0");
     }
 #endif
+
+    std::chrono::high_resolution_clock::time_point start, end;
+    start = std::chrono::high_resolution_clock::now();
 
     for (size_t i = 0; i < ITER_NUM; i++) {
         if (!accuracy) {
