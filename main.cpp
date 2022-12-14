@@ -24,6 +24,13 @@ void conv_nhwc(const float *input,
                const shape& wShape,
                const shape& outShape);
 
+void conv_nhwc_simd(const float *input,
+                    const float *weight,
+                    float *output,
+                    const std::array<size_t, 4>& inShape,
+                    const std::array<size_t, 4>& wShape,
+                    const std::array<size_t, 4>& outShape);
+
 void reorder_nchw_nhwc(const float* src,
                        float* dst,
                        const std::array<size_t, 4>& shape);
@@ -74,15 +81,15 @@ params perf_params = {
     .N = 1,
     .C_IN = 64,
     .C_OUT = 32,
-    .IH = 512,
-    .IW = 512,
+    .IH = 128,
+    .IW = 128,
     .KH = 3,
     .KW = 3,
-    .ITER_NUM = 5,
+    .ITER_NUM = 10,
 };
 
 int main() {
-    const bool accuracy = true;
+    const bool accuracy = false;
 
     params runParams;
     if (accuracy) {
@@ -140,7 +147,8 @@ int main() {
         }
 
     #if defined(SIMD_IMPL)
-
+        reorder_nchw_nhwc(inputNCHW.data(), inputNHWC.data(), inShape);
+        conv_nhwc_simd(inputNHWC.data(), weight.data(), output.data(), inShape, wShape, outShape);
     #elif defined(NHWC_IMPL)
         reorder_nchw_nhwc(inputNCHW.data(), inputNHWC.data(), inShape);
         conv_nhwc(inputNHWC.data(), weight.data(), output.data(), inShape, wShape, outShape);
