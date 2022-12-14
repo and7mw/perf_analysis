@@ -142,8 +142,8 @@ int main() {
     #if defined(SIMD_IMPL)
 
     #elif defined(NHWC_IMPL)
-        reorder_nchw_nhwc(inputNCHW.data(), inputNHWC.data(), wShape);
-        conv_nhwc(inputNCHW.data(), weight.data(), output.data(), inShape, wShape, outShape);
+        reorder_nchw_nhwc(inputNCHW.data(), inputNHWC.data(), inShape);
+        conv_nhwc(inputNHWC.data(), weight.data(), output.data(), inShape, wShape, outShape);
     #else
         conv_nchw(inputNCHW.data(), weight.data(), output.data(), inShape, wShape, outShape);
     #endif
