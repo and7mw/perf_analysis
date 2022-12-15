@@ -10,6 +10,7 @@ void conv_nhwc_simd(const float *input,
                     const std::array<size_t, 4>& wShape,
                     const std::array<size_t, 4>& outShape) {
     const size_t vlen = 8;
+    const size_t bodySize = wShape[1] - (wShape[1] % vlen);
 
     auto kernel = [&](const float* inDataB,
                       float* outDataB,
@@ -20,19 +21,27 @@ void conv_nhwc_simd(const float *input,
         __m256 in_vec, w_vec;
         __m256 res_vec = _mm256_set1_ps(0.0f);
 
+        float result = 0.0f;
+
         for (size_t kh = 0; kh < wShape[2]; kh++) {
             for (size_t kw = 0; kw < wShape[3]; kw++) {
-                for (size_t k_ic = 0; k_ic < wShape[1]; k_ic+=vlen) {
+                size_t k_ic = 0;
+                for (; k_ic < bodySize; k_ic+=vlen) {
                     in_vec = _mm256_loadu_ps(inDataB + offset + kh * inShape[1] * inShape[3] + kw * inShape[1] + k_ic);
                     w_vec = _mm256_loadu_ps(weight + kh * wShape[1] * wShape[3] + kw * wShape[1] + k_ic);
                     
                     res_vec = _mm256_fmadd_ps(in_vec, w_vec, res_vec);
                 }
+                for (; k_ic < wShape[1]; k_ic++) {
+                    const float inVal = inDataB[offset + kh * inShape[1] * inShape[3] + kw * inShape[1] + k_ic];
+                    const float wVal = weight[kh * wShape[1] * wShape[3] + kw * wShape[1] + k_ic];
+
+                    result += inVal * wVal;
+                }
             }
         }
         float vec_dump[vlen];
         _mm256_storeu_ps(vec_dump, res_vec);
-        float result = 0.0f;
         for (size_t i = 0; i < vlen; i++) {
             result += vec_dump[i];
         }

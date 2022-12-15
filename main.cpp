@@ -143,10 +143,6 @@ int main() {
     if (!__builtin_cpu_supports("fma")) {
         throw std::runtime_error("simd implementation requires fma feature support");
     }
-    const size_t vlen = 8;
-    if (inShape[1] % vlen != 0) {
-        throw std::runtime_error("simd implementation support C_IN % vlen == 0");
-    }
 #endif
 
     std::chrono::high_resolution_clock::time_point start, end;
